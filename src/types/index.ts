@@ -40,6 +40,7 @@ export interface UpdateTaskPayload {
   parent_id?: string | null;
   completed?: boolean;
   completed_at?: string | null;
+  completion_reason?: string | null;
 }
 
 export interface CompleteTaskPayload {

@@ -119,6 +119,17 @@ export function WeeklyCalendar() {
     }
   }
 
+  async function handleRevert(task: Task) {
+    setTasks((prev) =>
+      prev.map((t) => t.id === task.id ? { ...t, completed: false, completed_at: undefined, completion_reason: undefined } : t)
+    );
+    try {
+      await api.tasks.update(task.id, { completed: false, completed_at: null, completion_reason: null });
+    } catch {
+      loadTasks();
+    }
+  }
+
   function handleTaskCompleted(task: Task) {
     setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
   }
@@ -407,6 +418,7 @@ export function WeeklyCalendar() {
                         onCompleteDirectly={handleCompleteDirectly}
                         onCompleteWithReason={(t) => setCompleteModal({ open: true, task: t })}
                         onUnNest={handleUnNest}
+                        onRevert={handleRevert}
                       />
                     ))}
                   </div>

@@ -192,6 +192,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       parent_id?: string | null;
       completed?: boolean;
       completed_at?: string | null;
+      completion_reason?: string | null;
     };
   }>(
     "/tasks/:id",
@@ -209,6 +210,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
             parent_id: { type: ["string", "null"] },
             completed: { type: "boolean" },
             completed_at: { type: ["string", "null"] },
+            completion_reason: { type: ["string", "null"] },
           },
         },
       },
@@ -227,6 +229,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       if ("parent_id" in body) patch.parent_id = body.parent_id ?? null;
       if (body.completed !== undefined) patch.completed = body.completed;
       if ("completed_at" in body) patch.completed_at = body.completed_at ?? null;
+      if ("completion_reason" in body) patch.completion_reason = body.completion_reason ?? null;
 
       const { data, error } = await fastify.supabase
         .from("tasks")

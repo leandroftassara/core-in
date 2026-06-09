@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { CheckCircle2, CornerUpLeft, XCircle } from "lucide-react";
+import { CheckCircle2, CornerUpLeft, RotateCcw, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/types";
 
@@ -14,9 +14,10 @@ interface SubtaskRowProps {
   onCompleteDirectly: (task: Task) => void;
   onCompleteWithReason: (task: Task) => void;
   onUnNest: (taskId: string) => void;
+  onRevert: (task: Task) => void;
 }
 
-function SubtaskRow({ task, onCardClick, onCompleteDirectly, onCompleteWithReason, onUnNest }: SubtaskRowProps) {
+function SubtaskRow({ task, onCardClick, onCompleteDirectly, onCompleteWithReason, onUnNest, onRevert }: SubtaskRowProps) {
   return (
     <div
       onClick={(e) => { e.stopPropagation(); onCardClick(task); }}
@@ -37,31 +38,41 @@ function SubtaskRow({ task, onCardClick, onCompleteDirectly, onCompleteWithReaso
           <p className="mt-0.5 text-foreground/70 line-clamp-1">{task.description}</p>
         )}
       </div>
-      {!task.completed && (
-        <div className="flex items-center gap-0.5 shrink-0 mt-px">
+      <div className="flex items-center gap-0.5 shrink-0 mt-px">
+        {task.completed ? (
           <button
-            onClick={(e) => { e.stopPropagation(); onUnNest(task.id); }}
+            onClick={(e) => { e.stopPropagation(); onRevert(task); }}
             className="flex h-4 w-4 items-center justify-center rounded opacity-40 hover:opacity-100 transition-opacity"
-            title="Move to top level"
+            title="Revert to pending"
           >
-            <CornerUpLeft className="h-2.5 w-2.5" />
+            <RotateCcw className="h-2.5 w-2.5" />
           </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onCompleteWithReason(task); }}
-            className="flex h-4 w-4 items-center justify-center rounded opacity-40 hover:opacity-100 hover:text-destructive transition-opacity"
-            title="Complete with reason"
-          >
-            <XCircle className="h-2.5 w-2.5" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onCompleteDirectly(task); }}
-            className="flex h-4 w-4 items-center justify-center rounded opacity-40 hover:opacity-100 hover:text-green-600 transition-opacity"
-            title="Mark complete"
-          >
-            <CheckCircle2 className="h-2.5 w-2.5" />
-          </button>
-        </div>
-      )}
+        ) : (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); onUnNest(task.id); }}
+              className="flex h-4 w-4 items-center justify-center rounded opacity-40 hover:opacity-100 transition-opacity"
+              title="Move to top level"
+            >
+              <CornerUpLeft className="h-2.5 w-2.5" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onCompleteWithReason(task); }}
+              className="flex h-4 w-4 items-center justify-center rounded opacity-40 hover:opacity-100 hover:text-destructive transition-opacity"
+              title="Complete with reason"
+            >
+              <XCircle className="h-2.5 w-2.5" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onCompleteDirectly(task); }}
+              className="flex h-4 w-4 items-center justify-center rounded opacity-40 hover:opacity-100 hover:text-green-600 transition-opacity"
+              title="Mark complete"
+            >
+              <CheckCircle2 className="h-2.5 w-2.5" />
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -77,6 +88,7 @@ interface TaskCardProps {
   onCompleteDirectly: (task: Task) => void;
   onCompleteWithReason: (task: Task) => void;
   onUnNest?: (taskId: string) => void;
+  onRevert?: (task: Task) => void;
 }
 
 export function TaskCard({
@@ -88,6 +100,7 @@ export function TaskCard({
   onCompleteDirectly,
   onCompleteWithReason,
   onUnNest,
+  onRevert,
 }: TaskCardProps) {
   const {
     attributes,
@@ -147,24 +160,34 @@ export function TaskCard({
           )}
         </div>
 
-        {!task.completed && (
-          <div className="flex items-center gap-0.5 shrink-0 mt-px">
+        <div className="flex items-center gap-0.5 shrink-0 mt-px">
+          {task.completed ? (
             <button
-              onClick={(e) => { e.stopPropagation(); onCompleteWithReason(task); }}
-              className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 hover:text-destructive transition-opacity"
-              title="Complete with reason"
+              onClick={(e) => { e.stopPropagation(); onRevert?.(task); }}
+              className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 transition-opacity"
+              title="Revert to pending"
             >
-              <XCircle className="h-3 w-3" />
+              <RotateCcw className="h-3 w-3" />
             </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onCompleteDirectly(task); }}
-              className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 hover:text-green-700 transition-opacity"
-              title="Mark complete"
-            >
-              <CheckCircle2 className="h-3 w-3" />
-            </button>
-          </div>
-        )}
+          ) : (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); onCompleteWithReason(task); }}
+                className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 hover:text-destructive transition-opacity"
+                title="Complete with reason"
+              >
+                <XCircle className="h-3 w-3" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onCompleteDirectly(task); }}
+                className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 hover:text-green-700 transition-opacity"
+                title="Mark complete"
+              >
+                <CheckCircle2 className="h-3 w-3" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Nesting hint */}
@@ -185,6 +208,7 @@ export function TaskCard({
               onCompleteDirectly={onCompleteDirectly}
               onCompleteWithReason={onCompleteWithReason}
               onUnNest={onUnNest ?? (() => {})}
+              onRevert={onRevert ?? (() => {})}
             />
           ))}
         </div>
