@@ -68,11 +68,33 @@ export function WeeklyCalendar() {
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const weekKey = format(weekStart, "yyyy-MM-dd");
 
+  async function syncParentCompletion(allTasks: Task[]): Promise<Task[]> {
+    const parentIds = [...new Set(allTasks.filter((t) => t.parent_id).map((t) => t.parent_id!))];
+    let result = [...allTasks];
+    for (const parentId of parentIds) {
+      const parent = result.find((t) => t.id === parentId);
+      if (!parent) continue;
+      const subtasks = result.filter((t) => t.parent_id === parentId);
+      if (subtasks.length === 0) continue;
+      const allDone = subtasks.every((t) => t.completed);
+      if (allDone && !parent.completed) {
+        const now = new Date().toISOString();
+        result = result.map((t) => t.id === parentId ? { ...t, completed: true, completed_at: now } : t);
+        await api.tasks.update(parentId, { completed: true, completed_at: now });
+      } else if (!allDone && parent.completed && !parent.completion_reason) {
+        result = result.map((t) => t.id === parentId ? { ...t, completed: false, completed_at: undefined, completion_reason: undefined } : t);
+        await api.tasks.update(parentId, { completed: false, completed_at: null, completion_reason: null });
+      }
+    }
+    return result;
+  }
+
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.tasks.list(weekKey);
-      setTasks(data);
+      const synced = await syncParentCompletion(data);
+      setTasks(synced);
     } catch {
       // server might not be running in dev without backend
     } finally {
@@ -109,29 +131,63 @@ export function WeeklyCalendar() {
 
   async function handleCompleteDirectly(task: Task) {
     const now = new Date().toISOString();
-    setTasks((prev) =>
-      prev.map((t) => t.id === task.id ? { ...t, completed: true, completed_at: now } : t)
-    );
+    const updated = tasks.map((t) => t.id === task.id ? { ...t, completed: true, completed_at: now } : t);
+    setTasks(updated);
     try {
       await api.tasks.update(task.id, { completed: true, completed_at: now });
     } catch {
       loadTasks();
+      return;
     }
+    if (task.parent_id) await autoCompleteParent(task.parent_id, updated);
   }
 
   async function handleRevert(task: Task) {
-    setTasks((prev) =>
-      prev.map((t) => t.id === task.id ? { ...t, completed: false, completed_at: undefined, completion_reason: undefined } : t)
+    const updated = tasks.map((t) =>
+      t.id === task.id ? { ...t, completed: false, completed_at: undefined, completion_reason: undefined } : t
     );
+    setTasks(updated);
     try {
       await api.tasks.update(task.id, { completed: false, completed_at: null, completion_reason: null });
+    } catch {
+      loadTasks();
+      return;
+    }
+    if (task.parent_id) await autoRevertParent(task.parent_id, updated);
+  }
+
+  function handleTaskCompleted(task: Task) {
+    const updated = tasks.map((t) => t.id === task.id ? task : t);
+    setTasks(updated);
+    if (task.parent_id) autoCompleteParent(task.parent_id, updated);
+  }
+
+  async function autoCompleteParent(parentId: string, currentTasks: Task[]) {
+    const parent = currentTasks.find((t) => t.id === parentId);
+    if (!parent || parent.completed) return;
+    const subtasks = currentTasks.filter((t) => t.parent_id === parentId);
+    if (subtasks.length === 0 || !subtasks.every((t) => t.completed)) return;
+    const now = new Date().toISOString();
+    setTasks((prev) => prev.map((t) => t.id === parentId ? { ...t, completed: true, completed_at: now } : t));
+    try {
+      await api.tasks.update(parentId, { completed: true, completed_at: now });
     } catch {
       loadTasks();
     }
   }
 
-  function handleTaskCompleted(task: Task) {
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+  async function autoRevertParent(parentId: string, currentTasks: Task[]) {
+    const parent = currentTasks.find((t) => t.id === parentId);
+    // Only auto-revert if it was auto-completed (no manual reason)
+    if (!parent || !parent.completed || parent.completion_reason) return;
+    setTasks((prev) =>
+      prev.map((t) => t.id === parentId ? { ...t, completed: false, completed_at: undefined, completion_reason: undefined } : t)
+    );
+    try {
+      await api.tasks.update(parentId, { completed: false, completed_at: null, completion_reason: null });
+    } catch {
+      loadTasks();
+    }
   }
 
   function handleTaskDeleted(taskId: string) {

@@ -160,34 +160,36 @@ export function TaskCard({
           )}
         </div>
 
-        <div className="flex items-center gap-0.5 shrink-0 mt-px">
-          {task.completed ? (
-            <button
-              onClick={(e) => { e.stopPropagation(); onRevert?.(task); }}
-              className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 transition-opacity"
-              title="Revert to pending"
-            >
-              <RotateCcw className="h-3 w-3" />
-            </button>
-          ) : (
-            <>
+        {subtasks.length === 0 && (
+          <div className="flex items-center gap-0.5 shrink-0 mt-px">
+            {task.completed ? (
               <button
-                onClick={(e) => { e.stopPropagation(); onCompleteWithReason(task); }}
-                className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 hover:text-destructive transition-opacity"
-                title="Complete with reason"
+                onClick={(e) => { e.stopPropagation(); onRevert?.(task); }}
+                className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 transition-opacity"
+                title="Revert to pending"
               >
-                <XCircle className="h-3 w-3" />
+                <RotateCcw className="h-3 w-3" />
               </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onCompleteDirectly(task); }}
-                className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 hover:text-green-700 transition-opacity"
-                title="Mark complete"
-              >
-                <CheckCircle2 className="h-3 w-3" />
-              </button>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onCompleteWithReason(task); }}
+                  className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 hover:text-destructive transition-opacity"
+                  title="Complete with reason"
+                >
+                  <XCircle className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onCompleteDirectly(task); }}
+                  className="flex h-5 w-5 items-center justify-center rounded opacity-30 hover:opacity-100 hover:text-green-700 transition-opacity"
+                  title="Mark complete"
+                >
+                  <CheckCircle2 className="h-3 w-3" />
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Nesting hint */}
