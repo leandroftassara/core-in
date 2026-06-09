@@ -30,7 +30,7 @@ function SubtaskRow({ task, onCardClick, onCompleteDirectly, onCompleteWithReaso
       )}
     >
       <div className="flex-1 min-w-0">
-        <p className={cn("font-medium leading-snug", task.completed && "opacity-60")}>
+        <p className={cn("font-medium leading-snug", task.completed && (task.completion_reason ? "line-through opacity-70" : "opacity-60"))}>
           {task.title}
         </p>
         {task.description && (
