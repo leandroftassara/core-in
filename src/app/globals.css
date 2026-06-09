@@ -1,26 +1,59 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Stone palette — warm gray */
+    --background: 40 13% 98%;       /* stone-50 #FAFAF9 */
+    --foreground: 20 14% 11%;       /* stone-900 #1C1917 */
+    --card: 0 0% 100%;              /* white */
+    --card-foreground: 20 14% 11%;
+    --border: 30 6% 90%;            /* stone-200 #E7E5E4 */
+    --input: 30 6% 90%;
+    --ring: 24 10% 45%;             /* stone-500 #78716C */
+    --primary: 20 14% 16%;          /* stone-800 #292524 */
+    --primary-foreground: 40 13% 98%;
+    --secondary: 40 8% 96%;         /* stone-100 #F5F5F4 */
+    --secondary-foreground: 20 14% 16%;
+    --muted: 40 8% 96%;
+    --muted-foreground: 30 6% 63%;  /* stone-400 #A8A29E */
+    --accent: 30 6% 86%;            /* logo #DCDBDA ≈ stone-300 */
+    --accent-foreground: 20 14% 16%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    /* Completed tasks: soft green outside grayscale */
+    --completed: 142 69% 85%;       /* green-200 #BBF7D0 */
+    --completed-foreground: 140 84% 23%; /* green-800 #166534 */
+    /* Pending tasks: soft red */
+    --pending: 0 72% 94%;           /* red-50-ish */
+    --pending-border: 0 72% 85%;    /* red-200-ish */
+    --radius: 0.625rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--secondary));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--accent));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
 }
