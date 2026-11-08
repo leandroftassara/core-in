@@ -4,10 +4,12 @@ node_modules/
 # builds
 dist/
 .next/
+next-env.d.ts
 out/
 build/
 coverage/
 *.tsbuildinfo
+*.pem
 
 # turbo
 .turbo/
@@ -20,3 +22,5 @@ coverage/
 .DS_Store
 *.log
 .vercel
+
+
